@@ -12,6 +12,13 @@ export type CaseType =
 export type ConfidentialityLevel = "standard" | "sensitive" | "highly confidential";
 export type CampaignStatus = "draft" | "active" | "completed" | "archived";
 export type Role = "Admin" | "Pastor" | "Care Team" | "Ministry Leader" | "Volunteer";
+export type GivingCategory =
+  | "general offering"
+  | "designated offering (israel)"
+  | "designated offering (outreach)"
+  | "designated offering (global missions)"
+  | "designated offering (others)";
+export type TransactionStatus = "active" | "completed" | "archived";
 
 export interface PastoralCase {
   id: string;
@@ -37,6 +44,18 @@ export interface Campaign {
   endDate: string;
   targetAudience: string;
   status: CampaignStatus;
+}
+
+export interface GivingTransaction {
+  id: string;
+  memberId: string;
+  memberName: string;
+  phoneNumber: string;
+  amount: number; // in SGD cents stored as number
+  paynowId: string;
+  transactionDatetime: string; // DD/MM/YYYY HH:mm
+  category: GivingCategory;
+  status: TransactionStatus;
 }
 
 export interface StaffMember {
@@ -82,7 +101,7 @@ export const initialCases: PastoralCase[] = [
     id: "case-000",
     memberId: "m0",
     memberName: "Sarah Tan",
-    caseType: "illnss and hospital visit",
+    caseType: "illness and hospital visitation",
     assignedPastorId: "p1",
     assignedPastorName: "Pastor James Wilson",
     status: "scheduled",
@@ -227,6 +246,33 @@ export const initialCampaigns: Campaign[] = [
     targetAudience: "Worship Ministry",
     status: "draft",
   },
+];
+
+export const initialTransactions: GivingTransaction[] = [
+  { id: "txn-001", memberId: "m1", memberName: "David Thompson", phoneNumber: "+65 9123 4567", amount: 200, paynowId: "REF-20260301-001", transactionDatetime: "01/03/2026 09:15", category: "general offering", status: "paid" },
+  { id: "txn-002", memberId: "m2", memberName: "Maria Gonzalez", phoneNumber: "+65 8234 5678", amount: 500, paynowId: "REF-20260302-002", transactionDatetime: "02/03/2026 10:30", category: "designated offering (israel)", status: "paid" },
+  { id: "txn-003", memberId: "m3", memberName: "Robert Kim", phoneNumber: "+65 9345 6789", amount: 150, paynowId: "REF-20260305-003", transactionDatetime: "05/03/2026 11:00", category: "designated offering (outreach)", status: "pending" },
+  { id: "txn-004", memberId: "m4", memberName: "Angela Foster", phoneNumber: "+65 8456 7890", amount: 1000, paynowId: "REF-20260308-004", transactionDatetime: "08/03/2026 14:20", category: "designated offering (global missions)", status: "pending" },
+  { id: "txn-005", memberId: "m5", memberName: "Thomas Brown", phoneNumber: "+65 9567 8901", amount: 80, paynowId: "REF-20260309-005", transactionDatetime: "09/03/2026 09:45", category: "general offering", status: "paid" },
+  { id: "txn-006", memberId: "m6", memberName: "Jennifer White", phoneNumber: "+65 8678 9012", amount: 300, paynowId: "REF-20260310-006", transactionDatetime: "10/03/2026 16:00", category: "designated offering (others)", status: "paid" },
+  { id: "txn-007", memberId: "m7", memberName: "Samuel Lee", phoneNumber: "+65 9789 0123", amount: 250, paynowId: "REF-20260312-007", transactionDatetime: "12/03/2026 08:30", category: "general offering", status: "paid" },
+  { id: "txn-008", memberId: "m8", memberName: "Grace Lim", phoneNumber: "+65 8890 1234", amount: 600, paynowId: "REF-20260313-008", transactionDatetime: "13/03/2026 12:15", category: "designated offering (israel)", status: "cancelled" },
+  { id: "txn-009", memberId: "m9", memberName: "Benjamin Tan", phoneNumber: "+65 9901 2345", amount: 120, paynowId: "REF-20260314-009", transactionDatetime: "14/03/2026 10:00", category: "designated offering (outreach)", status: "cancelled" },
+  { id: "txn-010", memberId: "m10", memberName: "Rachel Ng", phoneNumber: "+65 8012 3456", amount: 2000, paynowId: "REF-20260315-010", transactionDatetime: "15/03/2026 09:00", category: "designated offering (global missions)", status: "paid" },
+  { id: "txn-011", memberId: "m11", memberName: "Caleb Wong", phoneNumber: "+65 9123 5678", amount: 50, paynowId: "REF-20260316-011", transactionDatetime: "16/03/2026 13:30", category: "general offering", status: "paid" },
+  { id: "txn-012", memberId: "m12", memberName: "Lydia Koh", phoneNumber: "+65 8234 6789", amount: 400, paynowId: "REF-20260317-012", transactionDatetime: "17/03/2026 15:45", category: "designated offering (others)", status: "paid" },
+  { id: "txn-013", memberId: "m2", memberName: "Maria Gonzalez", phoneNumber: "+65 8234 5678", amount: 500, paynowId: "REF-20260318-013", transactionDatetime: "18/03/2026 09:20", category: "general offering", status: "paid" },
+  { id: "txn-014", memberId: "m1", memberName: "David Thompson", phoneNumber: "+65 9123 4567", amount: 200, paynowId: "REF-20260319-014", transactionDatetime: "19/03/2026 11:10", category: "designated offering (global missions)", status: "paid" },
+  { id: "txn-015", memberId: "m13", memberName: "Esther Chua", phoneNumber: "+65 9234 5679", amount: 750, paynowId: "REF-20260320-015", transactionDatetime: "20/03/2026 14:00", category: "designated offering (israel)", status: "cancelled" },
+  { id: "txn-016", memberId: "m14", memberName: "Joshua Teo", phoneNumber: "+65 8345 6780", amount: 100, paynowId: "REF-20260321-016", transactionDatetime: "21/03/2026 10:30", category: "designated offering (outreach)", status: "cancelled" },
+  { id: "txn-017", memberId: "m15", memberName: "Hannah Singh", phoneNumber: "+65 9456 7891", amount: 300, paynowId: "REF-20260322-017", transactionDatetime: "22/03/2026 08:45", category: "general offering", status: "paid" },
+  { id: "txn-018", memberId: "m5", memberName: "Thomas Brown", phoneNumber: "+65 9567 8901", amount: 450, paynowId: "REF-20260323-018", transactionDatetime: "23/03/2026 12:00", category: "designated offering (global missions)", status: "paid" },
+  { id: "txn-019", memberId: "m8", memberName: "Grace Lim", phoneNumber: "+65 8890 1234", amount: 200, paynowId: "REF-20260324-019", transactionDatetime: "24/03/2026 09:30", category: "designated offering (others)", status: "paid" },
+  { id: "txn-020", memberId: "m3", memberName: "Robert Kim", phoneNumber: "+65 9345 6789", amount: 80, paynowId: "REF-20260101-020", transactionDatetime: "01/01/2026 10:00", category: "general offering", status: "paid" },
+  { id: "txn-021", memberId: "m6", memberName: "Jennifer White", phoneNumber: "+65 8678 9012", amount: 500, paynowId: "REF-20260115-021", transactionDatetime: "15/01/2026 11:30", category: "designated offering (israel)", status: "paid" },
+  { id: "txn-022", memberId: "m11", memberName: "Caleb Wong", phoneNumber: "+65 9123 5678", amount: 200, paynowId: "REF-20260201-022", transactionDatetime: "01/02/2026 09:00", category: "designated offering (outreach)", status: "paid" },
+  { id: "txn-023", memberId: "m4", memberName: "Angela Foster", phoneNumber: "+65 8456 7890", amount: 1500, paynowId: "REF-20260215-023", transactionDatetime: "15/02/2026 14:30", category: "designated offering (global missions)", status: "paid" },
+  { id: "txn-024", memberId: "m12", memberName: "Lydia Koh", phoneNumber: "+65 8234 6789", amount: 100, paynowId: "REF-20260222-024", transactionDatetime: "22/02/2026 16:00", category: "general offering", status: "paid" },
 ];
 
 export const caseTimelines: Record<string, TimelineItem[]> = {

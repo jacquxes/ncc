@@ -344,20 +344,24 @@ Case Types
 - financial or life crisis
 - crisis and trauma care
 
-## Campaign Management
-Used to coordinate church initiatives.
+## Giving
+View and track offerings from members.
 
-Campaign Fields
-- id
-- name
-- description
-- start_date
-- end_date
-- target_audience
-- status
+Categories
+- general offering
+- designated offering (israel)
+- designated offering (outreach)
+- designated offering (global missions)
+- designated offering (others)
 
-Campaign Status
-- draft
+Transactions
+- member id
+- member name
+- phone number
+- amount (Formatted as currency)
+- paynow id (Reference number)
+- transaction datetime (Formatted as DD/MM/YYYY HH:mm)
+- category
 - active
 - completed
 - archived

@@ -2,7 +2,7 @@ import { NavLink, Outlet } from "react-router";
 import {
   Home,
   Heart,
-  Megaphone,
+  HandCoins,
   Users,
   Settings,
   Church,
@@ -16,7 +16,7 @@ import { useCurrentUser } from "../context/UserContext";
 const navItems = [
   { to: "/", icon: Home, label: "Dashboard" },
   { to: "/pastoral-care", icon: Heart, label: "Pastoral Care" },
-  { to: "/campaigns", icon: Megaphone, label: "Campaigns" },
+  { to: "/giving", icon: HandCoins, label: "Giving" },
   { to: "/members", icon: Users, label: "Members" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
