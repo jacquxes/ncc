@@ -28,17 +28,17 @@ const ALL_CATEGORIES: GivingCategory[] = [
 ];
 
 const CATEGORY_COLORS: Record<GivingCategory, { bar: string; badge: string }> = {
-  "general offering":                       { bar: "bg-primary",      badge: "bg-primary/10 text-primary" },
-  "designated offering (israel)":           { bar: "bg-violet-500",   badge: "bg-violet-100 text-violet-700" },
-  "designated offering (outreach)":         { bar: "bg-emerald-500",  badge: "bg-emerald-100 text-emerald-700" },
-  "designated offering (global missions)":  { bar: "bg-amber-500",    badge: "bg-amber-100 text-amber-700" },
-  "designated offering (others)":           { bar: "bg-rose-400",     badge: "bg-rose-100 text-rose-700" },
+  "general offering": { bar: "bg-primary", badge: "bg-primary/10 text-primary" },
+  "designated offering (israel)": { bar: "bg-violet-500", badge: "bg-violet-100 text-violet-700" },
+  "designated offering (outreach)": { bar: "bg-emerald-500", badge: "bg-emerald-100 text-emerald-700" },
+  "designated offering (global missions)": { bar: "bg-amber-500", badge: "bg-amber-100 text-amber-700" },
+  "designated offering (others)": { bar: "bg-rose-400", badge: "bg-rose-100 text-rose-700" },
 };
 
 const STATUS_STYLES: Record<TransactionStatus, string> = {
-  active:    "bg-green-100 text-green-700",
-  completed: "bg-blue-100 text-blue-700",
-  archived:  "bg-gray-100 text-gray-500",
+  pending: "bg-green-100 text-green-700",
+  paid: "bg-blue-100 text-blue-700",
+  cancelled: "bg-gray-100 text-gray-500",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -180,11 +180,10 @@ export function Giving() {
           <button
             key={v}
             onClick={() => setView(v)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-[13px] font-medium transition-all ${
-              view === v
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-[13px] font-medium transition-all ${view === v
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+              }`}
             aria-pressed={view === v}
           >
             {v === "insights" ? (
@@ -217,11 +216,10 @@ export function Giving() {
                 <button
                   key={v}
                   onClick={() => setPeriod(v)}
-                  className={`px-3 py-1 rounded-md text-[12px] font-medium transition-all ${
-                    period === v
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`px-3 py-1 rounded-md text-[12px] font-medium transition-all ${period === v
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {label}
                 </button>
@@ -328,9 +326,9 @@ export function Giving() {
                 className="appearance-none pl-3 pr-8 py-2 border border-border rounded-lg bg-input-background text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary capitalize cursor-pointer"
               >
                 <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-                <option value="archived">Archived</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="cancelled">Cancelled</option>
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             </div>
@@ -368,9 +366,8 @@ export function Giving() {
                   {filteredTransactions.map((t, i) => (
                     <tr
                       key={t.id}
-                      className={`border-b border-border last:border-0 hover:bg-muted/30 transition-colors ${
-                        i % 2 === 0 ? "" : "bg-muted/10"
-                      }`}
+                      className={`border-b border-border last:border-0 hover:bg-muted/30 transition-colors ${i % 2 === 0 ? "" : "bg-muted/10"
+                        }`}
                     >
                       <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                         {t.transactionDatetime}
@@ -501,9 +498,8 @@ function Th({
   return (
     <th
       onClick={onClick}
-      className={`px-4 py-3 font-semibold text-[12px] text-muted-foreground uppercase tracking-wide whitespace-nowrap select-none ${
-        right ? "text-right" : "text-left"
-      } ${onClick ? "cursor-pointer hover:text-foreground transition-colors" : ""}`}
+      className={`px-4 py-3 font-semibold text-[12px] text-muted-foreground uppercase tracking-wide whitespace-nowrap select-none ${right ? "text-right" : "text-left"
+        } ${onClick ? "cursor-pointer hover:text-foreground transition-colors" : ""}`}
     >
       {children}
     </th>
