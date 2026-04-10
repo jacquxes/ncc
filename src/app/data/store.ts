@@ -28,6 +28,15 @@ export type GivingCategory =
   | "designated offering (global missions)"
   | "designated offering (others)";
 export type TransactionStatus = "paid" | "pending" | "cancelled" | "archived";
+export type AttendanceType = "sunday service" | "cell group" | "event";
+
+export interface AttendanceRecord {
+  date: string; // YYYY-MM-DD
+  type: AttendanceType;
+  eventName?: string; // only for 'event'
+  attended: boolean;
+}
+
 
 export interface PastoralCase {
   id: string;
@@ -126,6 +135,10 @@ export interface Member {
   ministries: MinistryEntry[];
   pastoralCareLog: PastoralCareEntry[];
   staffNotes: StaffNote[];
+  skills: string[];
+  interests: string[];
+  homeAddress: string;
+  attendance: AttendanceRecord[];
 }
 
 export type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
@@ -219,6 +232,23 @@ export const members: Member[] = [
     staffNotes: [
       { id: "sn-001", authorName: "Admin Alex Rivera", authorRole: "Admin", content: "Member expressed interest in hosting a home group in Q3 2026. Follow up in June.", createdAt: "Mar 5, 2026" },
     ],
+    skills: ["Graphic Design", "Photography", "Event Planning"],
+    interests: ["Photography", "Outdoor Trekking", "Cooking"],
+    homeAddress: "Block 123, Jurong West St 45, #08-12, Singapore 640123",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-03", type: "cell group", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-10", type: "cell group", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-17", type: "cell group", attended: true },
+      { date: "2026-03-20", type: "event", eventName: "Worship Night", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: false },
+      { date: "2026-03-24", type: "cell group", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-03-31", type: "cell group", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "m2",
@@ -253,6 +283,22 @@ export const members: Member[] = [
       { id: "sn-002", authorName: "Admin Alex Rivera", authorRole: "Admin", content: "Maria is being considered for the Elder board nomination in next year's AGM.", createdAt: "Jan 20, 2026" },
       { id: "sn-003", authorName: "Pastor Sarah Chen", authorRole: "Pastor", content: "Pre-marital sessions going well. Couple shows strong spiritual foundation.", createdAt: "Mar 15, 2026" },
     ],
+    skills: ["Strategic Planning", "Project Management", "Public Speaking"],
+    interests: ["Reading", "Coffee Tasting", "Classical Music"],
+    homeAddress: "78 Tampines Central 1, #12-05, Singapore 529543",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-03", type: "cell group", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-10", type: "cell group", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-17", type: "cell group", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-24", type: "cell group", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-03-31", type: "cell group", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "m3",
@@ -280,6 +326,17 @@ export const members: Member[] = [
       { date: "Mar 10, 2026", pastor: "Rev. Michael Torres", type: "Home Visit", summary: "Final structured care visit. Member active in church again." },
     ],
     staffNotes: [],
+    skills: ["Audio Engineering", "Electrical Wiring"],
+    interests: ["Classic Cars", "Bass Fishing"],
+    homeAddress: "12 Serangoon North Ave 5, #04-33, Singapore 554915",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "m4",
@@ -307,6 +364,22 @@ export const members: Member[] = [
     ],
     staffNotes: [
       { id: "sn-004", authorName: "Admin Alex Rivera", authorRole: "Admin", content: "Approved one-time benevolence grant of S$500. Refer to finance team for processing.", createdAt: "Mar 10, 2026" },
+    ],
+    skills: ["Community Organizing", "First Aid", "Spanish (Fluent)"],
+    interests: ["Social Justice", "Gardening", "Poetry"],
+    homeAddress: "221 Boon Lay Drive, #15-442, Singapore 640221",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: false },
+      { date: "2026-03-03", type: "cell group", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-10", type: "cell group", attended: false },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-17", type: "cell group", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-24", type: "cell group", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-03-31", type: "cell group", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
     ],
   },
   {
@@ -341,6 +414,22 @@ export const members: Member[] = [
     staffNotes: [
       { id: "sn-005", authorName: "Pastor Sarah Chen", authorRole: "Pastor", content: "Thomas is a strong candidate for cell leader training. Recommend for Q2 cohort.", createdAt: "Mar 1, 2026" },
     ],
+    skills: ["Mentoring", "Bible Teaching", "Carpentry"],
+    interests: ["Study of Apologetics", "Woodworking", "Marathons"],
+    homeAddress: "56 Pasir Ris Grove, #06-19, Singapore 518201",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-03", type: "cell group", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-10", type: "cell group", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-17", type: "cell group", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-24", type: "cell group", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-03-31", type: "cell group", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "m6",
@@ -366,7 +455,16 @@ export const members: Member[] = [
       { date: "Mar 7, 2026", pastor: "Rev. Michael Torres", type: "Follow-up", summary: "Positive progress. Actively engaged in Zeta cell group." },
     ],
     staffNotes: [],
+    skills: ["Singing", "Customer Service", "Mandarin (Fluent)"],
+    interests: ["Musical Theatre", "Baking", "Yoga"],
+    homeAddress: "Block 89, Redhill Close, #11-102, Singapore 150089",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+    ],
   },
+
   {
     id: "m7",
     name: "Samuel Lee",
@@ -397,6 +495,14 @@ export const members: Member[] = [
     staffNotes: [
       { id: "sn-006", authorName: "Admin Alex Rivera", authorRole: "Admin", content: "Samuel is being considered for Associate Pastor role. Discussion in board meeting Q2.", createdAt: "Feb 5, 2026" },
     ],
+    skills: ["Leadership Development", "Public Speaking", "Strategic Oversight"],
+    interests: ["History", "Hiking", "Mentorship"],
+    homeAddress: "15 Holland Hill, #03-01, Singapore 278735",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "m8",
@@ -417,6 +523,22 @@ export const members: Member[] = [
     ],
     pastoralCareLog: [],
     staffNotes: [],
+    skills: ["Piano", "Teaching", "Creative Writing"],
+    interests: ["Classical Music", "Illustration", "Yoga"],
+    homeAddress: "Block 456, Choa Chu Kang Ave 4, #07-156, Singapore 680456",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-03", type: "cell group", attended: false },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-10", type: "cell group", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-17", type: "cell group", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-24", type: "cell group", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-03-31", type: "cell group", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "p1",
@@ -436,6 +558,17 @@ export const members: Member[] = [
     ],
     pastoralCareLog: [],
     staffNotes: [],
+    skills: ["Pastoral Care", "Theological Research", "Leadership"],
+    interests: ["Theology", "Global Missions", "Reading"],
+    homeAddress: "Grace Church Rectory, 1 Church Road, Singapore 123456",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "p2",
@@ -455,6 +588,17 @@ export const members: Member[] = [
     ],
     pastoralCareLog: [],
     staffNotes: [],
+    skills: ["Varies by Staff Role"],
+    interests: ["Church Community"],
+    homeAddress: "Staff Housing / Private Address",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "p3",
@@ -474,6 +618,17 @@ export const members: Member[] = [
     ],
     pastoralCareLog: [],
     staffNotes: [],
+    skills: ["Varies by Staff Role"],
+    interests: ["Church Community"],
+    homeAddress: "Staff Housing / Private Address",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "ct1",
@@ -493,6 +648,17 @@ export const members: Member[] = [
     ],
     pastoralCareLog: [],
     staffNotes: [],
+    skills: ["Varies by Staff Role"],
+    interests: ["Church Community"],
+    homeAddress: "Staff Housing / Private Address",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "ct2",
@@ -512,6 +678,17 @@ export const members: Member[] = [
     ],
     pastoralCareLog: [],
     staffNotes: [],
+    skills: ["Varies by Staff Role"],
+    interests: ["Church Community"],
+    homeAddress: "Staff Housing / Private Address",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "ml1",
@@ -531,6 +708,17 @@ export const members: Member[] = [
     ],
     pastoralCareLog: [],
     staffNotes: [],
+    skills: ["Varies by Staff Role"],
+    interests: ["Church Community"],
+    homeAddress: "Staff Housing / Private Address",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
   {
     id: "a1",
@@ -550,6 +738,17 @@ export const members: Member[] = [
     ],
     pastoralCareLog: [],
     staffNotes: [],
+    skills: ["Administrative Support", "Event Coordination"],
+    interests: ["Organization", "Community Building"],
+    homeAddress: "Admin's Private Residence",
+    attendance: [
+      { date: "2026-03-01", type: "sunday service", attended: true },
+      { date: "2026-03-08", type: "sunday service", attended: true },
+      { date: "2026-03-15", type: "sunday service", attended: true },
+      { date: "2026-03-22", type: "sunday service", attended: true },
+      { date: "2026-03-29", type: "sunday service", attended: true },
+      { date: "2026-04-05", type: "sunday service", attended: true },
+    ],
   },
 ];
 

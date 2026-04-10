@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   ArrowLeft,
@@ -15,6 +15,12 @@ import {
   StickyNote,
   ChevronRight,
   User,
+  MapPin,
+  Wrench,
+  Coffee,
+  BarChart3,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import {
   members,
@@ -132,7 +138,7 @@ export function MemberProfile() {
     currentUser.role === "Admin" ||
     currentUser.role === "Care Team";
 
-  const [activeTab, setActiveTab] = useState<"overview" | "giving" | "ministries" | "care" | "notes">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "giving" | "ministries" | "care" | "notes" | "attendance">("overview");
 
   // Giving data
   const maxGiving = Math.max(...member.givingByYear.map((g) => g.total), 1);
@@ -227,6 +233,41 @@ export function MemberProfile() {
               <Phone className="w-3.5 h-3.5" />
               {member.phone}
             </a>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <MapPin className="w-3.5 h-3.5" />
+              {member.homeAddress}
+            </div>
+          </div>
+
+          {/* Tags row */}
+          <div className="flex flex-wrap gap-x-8 gap-y-4 mt-4 pt-4 border-t border-border">
+            {/* Skills */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60 flex items-center gap-1.5">
+                <Wrench className="w-2.5 h-2.5" /> Skills
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {member.skills.map((s) => (
+                  <span key={s} className="px-2 py-0.5 rounded-md bg-primary/5 text-primary text-[11px] font-medium border border-primary/10">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Interests */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60 flex items-center gap-1.5">
+                <Coffee className="w-2.5 h-2.5" /> Interests
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {member.interests.map((i) => (
+                  <span key={i} className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[11px] font-medium border border-amber-100 dark:bg-amber-950/20 dark:text-amber-300 dark:border-amber-900/30">
+                    {i}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -276,6 +317,17 @@ export function MemberProfile() {
             />
           </div>
         </div>
+
+        {/* ── ATTENDANCE ── */}
+        <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
+            <BarChart3 className="w-4 h-4 text-orange-500" />
+            <h2 className="text-[15px] font-semibold">Weekly Attendance</h2>
+          </div>
+          <div className="p-5">
+            <AttendanceContent member={member} />
+          </div>
+        </section>
 
         {/* ── MINISTRIES ── */}
         <section className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
@@ -465,6 +517,7 @@ export function MemberProfile() {
         </section>
 
         {/* ── STAFF NOTES — Staff only ── */}
+
         {isStaff && (
           <StaffOnlySection
             title="Staff Notes"
@@ -506,6 +559,7 @@ export function MemberProfile() {
         <div className="flex bg-muted p-1 rounded-xl shadow-inner max-w-fit">
           {[
             { id: "overview", label: "Overview", icon: User },
+            { id: "attendance", label: "Attendance", icon: BarChart3 },
             { id: "ministries", label: "Ministries", icon: BookOpen },
             ...(isStaff ? [{ id: "care", label: "Pastoral Care", icon: Heart }] : []),
             { id: "giving", label: "Giving History", icon: TrendingUp },
@@ -579,6 +633,18 @@ export function MemberProfile() {
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "attendance" && (
+            <div>
+              <div className="flex items-center gap-2.5 px-6 py-5 border-b border-border">
+                <BarChart3 className="w-5 h-5 text-orange-500" />
+                <h2 className="text-[16px] font-semibold">Attendance History & Trends</h2>
+              </div>
+              <div className="p-6">
+                <AttendanceContent member={member} />
               </div>
             </div>
           )}
@@ -808,11 +874,118 @@ export function MemberProfile() {
 }
 
 // ── Small helper ───────────────────────────────────────────────────────────────
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="flex items-start justify-between gap-2">
       <span className="text-muted-foreground shrink-0">{label}</span>
       <span className="font-medium text-foreground text-right">{value}</span>
+    </div>
+  );
+}
+
+function AttendanceContent({ member }: { member: any }) {
+  // Group attendance by week (Sunday to Saturday)
+  const attendanceByWeek = useMemo(() => {
+    const weeksMap = new Map<string, { sunday: boolean; cell: boolean; event: boolean; weekStart: string }>();
+    
+    member.attendance.forEach((rec: any) => {
+      const date = new Date(rec.date);
+      const day = date.getDay();
+      const diff = date.getDate() - day; // Back to Sunday
+      const sundayDate = new Date(date);
+      sundayDate.setDate(diff);
+      sundayDate.setHours(0, 0, 0, 0);
+      const weekKey = sundayDate.toISOString().split("T")[0];
+
+      if (!weeksMap.has(weekKey)) {
+        weeksMap.set(weekKey, { sunday: false, cell: false, event: false, weekStart: weekKey });
+      }
+      
+      const week = weeksMap.get(weekKey)!;
+      if (rec.attended) {
+        if (rec.type === "sunday service") week.sunday = true;
+        if (rec.type === "cell group") week.cell = true;
+        if (rec.type === "event") week.event = true;
+      }
+    });
+
+    return Array.from(weeksMap.values()).sort((a, b) => b.weekStart.localeCompare(a.weekStart));
+  }, [member.attendance]);
+
+  return (
+    <div className="space-y-8">
+      {/* ── Attendance Graph ── */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Attendance Trends (Last 6 Weeks)</h4>
+          <div className="flex gap-4 text-[11px] font-medium">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-primary" /> Sunday</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Cell</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-orange-400" /> Event</span>
+          </div>
+        </div>
+        
+        <div className="flex items-end gap-2 h-40 pt-4 border-b border-l border-border px-4">
+          {attendanceByWeek.slice(0, 6).reverse().map((week) => (
+            <div key={week.weekStart} className="flex-1 flex flex-col justify-end gap-1 group relative">
+              {/* Tooltip hint */}
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20 shadow-xl">
+                Week of {new Date(week.weekStart).toLocaleDateString("en-SG", { day: 'numeric', month: 'short' })}
+              </div>
+              
+              {week.event && <div className="w-full h-8 bg-orange-400 rounded-sm hover:brightness-110 transition-all cursor-help" />}
+              {week.cell && <div className="w-full h-10 bg-emerald-500 rounded-sm hover:brightness-110 transition-all cursor-help" />}
+              {week.sunday && <div className="w-full h-12 bg-primary rounded-sm hover:brightness-110 transition-all cursor-help" />}
+              
+              {!week.event && !week.cell && !week.sunday && <div className="w-full h-1 bg-muted rounded-full mb-1 opacity-50" />}
+              
+              <div className="text-[9px] text-muted-foreground font-bold mt-2 text-center rotate-45 origin-left whitespace-nowrap">
+                {new Date(week.weekStart).toLocaleDateString("en-SG", { day: 'numeric', month: 'short' })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Attendance Listing ── */}
+      <div className="hidden xl:block">
+        <h4 className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-4">Detailed Records</h4>
+        <div className="border border-border rounded-xl overflow-hidden bg-muted/5">
+          <table className="w-full text-left text-[13px] border-collapse">
+            <thead>
+              <tr className="bg-muted/30 border-b border-border">
+                <th className="px-4 py-3 font-bold text-foreground">Date</th>
+                <th className="px-4 py-3 font-bold text-foreground">Type</th>
+                <th className="px-4 py-3 font-bold text-foreground text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {member.attendance.slice().sort((a: any, b: any) => b.date.localeCompare(a.date)).map((rec: any, i: number) => (
+                <tr key={i} className="hover:bg-muted/10 transition-colors">
+                  <td className="px-4 py-3 font-medium">
+                    {new Date(rec.date).toLocaleDateString("en-SG", { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="capitalize">{rec.type}</span>
+                    {rec.eventName && <span className="text-[11px] text-muted-foreground ml-2">({rec.eventName})</span>}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {rec.attended ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px] font-bold dark:bg-emerald-950/20">
+                        <CheckCircle2 className="w-3 h-3" /> Attended
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-red-500 bg-red-50 px-2 py-0.5 rounded-full text-[11px] font-bold dark:bg-red-950/20">
+                        <XCircle className="w-3 h-3" /> Absent
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

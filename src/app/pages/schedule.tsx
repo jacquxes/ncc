@@ -226,67 +226,70 @@ export function Schedule() {
 
   // ── DESKTOP Grid View ─────────────────────────────────────────────────────────
   const renderDesktopGrid = () => {
-    const mobileSelectedIdx = daysWindow.findIndex((d) => toLocalDateKey(d) === mobileSelectedDate);
-    const start = Math.max(0, Math.min(mobileSelectedIdx, daysWindow.length - 1));
-    
-    // Navigate week-by-week on mobile using the selectedDate as context, but just show the full grid on desktop
     return (
       <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          {/* min-width forces 14 columns. inline style avoids purge issues */}
-          <div style={{ minWidth: "900px" }}>
-            {/* Header */}
-            <div
-              className="grid border-b border-border bg-muted/20"
-              style={{ gridTemplateColumns: "80px repeat(14, 1fr)" }}
-            >
-              <div className="sticky left-0 bg-card z-10 border-r border-border" />
-              {daysWindow.map((date) => {
-                const dateStr = toLocalDateKey(date);
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                const isToday = dateStr === toLocalDateKey(new Date());
-                return (
-                  <div
-                    key={dateStr}
-                    className={`py-2 px-1 text-center border-r border-border last:border-r-0 ${isWeekend ? "bg-muted/10" : ""}`}
-                  >
-                    <div className={`text-[10px] uppercase font-bold tracking-widest ${isWeekend ? "text-muted-foreground/40" : "text-primary/60"}`}>
-                      {date.toLocaleDateString("en-US", { weekday: "short" })}
-                    </div>
-                    <div
-                      className={`text-[15px] font-black mt-0.5 w-7 h-7 mx-auto flex items-center justify-center rounded-full ${
-                        isToday ? "bg-primary text-primary-foreground" : ""
-                      }`}
-                    >
-                      {date.getDate()}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          {/* ── Strict Matrix Grid ── */}
+          <div 
+            className="grid"
+            style={{ 
+              minWidth: "1200px",
+              gridTemplateColumns: "80px repeat(14, 1fr)",
+            }}
+          >
+            {/* Top-left corner (sticky both ways) */}
+            <div className="sticky left-0 top-0 bg-muted/30 z-30 border-b border-r border-border" />
 
-            {/* Time Rows */}
+            {/* Header: Dates */}
+            {daysWindow.map((date) => {
+              const dateStr = toLocalDateKey(date);
+              const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+              const isToday = dateStr === toLocalDateKey(new Date());
+              return (
+                <div
+                  key={dateStr}
+                  className={`sticky top-0 z-20 py-3 text-center border-b border-r border-border bg-muted/30 ${
+                    isWeekend ? "text-muted-foreground/50" : "text-foreground"
+                  }`}
+                >
+                  <div className={`text-[10px] uppercase font-bold tracking-widest ${isWeekend ? "opacity-50" : "text-primary/70"}`}>
+                    {date.toLocaleDateString("en-US", { weekday: "short" })}
+                  </div>
+                  <div
+                    className={`text-[15px] font-black mt-1 w-8 h-8 mx-auto flex items-center justify-center rounded-full transition-colors ${
+                      isToday ? "bg-primary text-primary-foreground shadow-sm" : ""
+                    }`}
+                  >
+                    {date.getDate()}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Grid Rows */}
             {CALENDAR_HOURS.map((time) => {
               const ampmTime = formatDisplayTime(time);
               return (
-                <div
-                  key={time}
-                  className="grid border-b border-border/50 last:border-b-0 group"
-                  style={{ gridTemplateColumns: "80px repeat(14, 1fr)" }}
-                >
-                  {/* Time Label */}
-                  <div className="sticky left-0 bg-card z-10 border-r border-border flex items-center justify-center py-1 px-2">
-                    <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap group-hover:text-primary transition-colors">
+                <div key={time} className="contents">
+                  {/* Time Label (Sticky Column 1) */}
+                  <div className="sticky left-0 bg-card z-10 border-b border-r border-border flex items-center justify-center p-2 h-14">
+                    <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap">
                       {ampmTime}
                     </span>
                   </div>
 
-                  {/* Slots */}
+                  {/* 14 Slots for this hour */}
                   {daysWindow.map((date) => {
                     const dateStr = toLocalDateKey(date);
                     const dayName = DAYS[date.getDay() === 0 ? 6 : date.getDay() - 1];
+                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
                     return (
-                      <div key={dateStr} className="p-0.5 border-r border-border/40 last:border-r-0">
+                      <div 
+                        key={dateStr} 
+                        className={`p-1.5 border-b border-r border-border/40 hover:bg-muted/5 transition-colors h-14 flex items-center justify-center ${
+                          isWeekend ? "bg-muted/5" : ""
+                        }`}
+                      >
                         <SlotCell dateStr={dateStr} dayName={dayName} time={time} compact />
                       </div>
                     );

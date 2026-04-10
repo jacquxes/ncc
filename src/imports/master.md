@@ -385,6 +385,17 @@ interface Member {
   ministries: MinistryEntry[];
   pastoralCareLog: PastoralCareEntry[];  // staff-only
   staffNotes: StaffNote[];               // staff-only
+  skills: string[];
+  interests: string[];
+  homeAddress: string;
+  attendance: AttendanceRecord[];
+}
+
+interface AttendanceRecord {
+  date: string; // YYYY-MM-DD
+  type: "sunday service" | "cell group" | "event";
+  eventName?: string;
+  attended: boolean;
 }
 ```
 
@@ -395,7 +406,16 @@ Sections:
 **Header**
 - Profile photo placeholder (initials avatar), Name, Cell Group badge, Role badge
 - Joined date, Membership length (calculated)
-- Contact row: email and phone
+- Contact row: email, phone, and **home address** (with MapPin icon)
+- **Engagement Tags**: Skills (Wrench icon) and Interests (Coffee icon) displayed as themed tags
+
+**Attendance**
+- **Desktop**: 
+  - Stacked bar chart showing 6-week trends (Sunday, Cell, Event).
+  - Detailed history table with status badges (Attended/Absent) and event names.
+- **Mobile**:
+  - Stacked trend graph only (detailed records hidden for space).
+  - Component is relocated to follow the Giving Summary card in the vertical stack.
 
 **Giving History**
 - Lifetime total and years on record
@@ -504,6 +524,19 @@ interface Ministry {
   - Mobile: Card view showing ministry name, description, assigned leader, and member count.
   - Clean UI: Removed book icon avatars from card views.
 - **Ministry Edit/Create**: Modal for updating metadata, changing the leader from the personnel list, and multi-selecting members.
+
+## Schedule (Desktop Calendar)
+Purpose:
+Manage pastoral appointments and church-wide events in a high-density matrix.
+
+### Matrix Implementation
+- **Layout**: Strictly aligned **CSS Grid matrix** ensuring perfect row/column syncing.
+- **Grid Configuration**: 
+  - 1 column for time labels (sticky left).
+  - 14 columns for dates (sticky top).
+  - Top-left corner (intersection) is double-sticky (`z-30`).
+- **Sizing**: Fixed `h-14` height for all cells and headers to maintain structural integrity regardless of content length.
+- **Navigation**: Desktop-optimized horizontal scroll through a 14-day window.
 
 
 # 7. Permissions System
