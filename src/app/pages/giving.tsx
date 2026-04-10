@@ -7,6 +7,7 @@ import {
   Hash,
   BarChart3,
   ChevronDown,
+  Download,
 } from "lucide-react";
 import {
   initialTransactions,
@@ -39,6 +40,7 @@ const STATUS_STYLES: Record<TransactionStatus, string> = {
   pending: "bg-green-100 text-green-700",
   paid: "bg-blue-100 text-blue-700",
   cancelled: "bg-gray-100 text-gray-500",
+  archived: "bg-slate-100 text-slate-500",
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -89,6 +91,8 @@ export function Giving() {
   const [statusFilter, setStatusFilter] = useState<TransactionStatus | "all">("all");
   const [sortField, setSortField] = useState<keyof GivingTransaction>("transactionDatetime");
   const [sortAsc, setSortAsc] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   // ── Insights Data ────────────────────────────────────────────────────────────
   const periodTransactions = useMemo(() => filterByPeriod(initialTransactions, period), [period]);
@@ -132,6 +136,15 @@ export function Giving() {
     if (statusFilter !== "all") {
       txns = txns.filter((t) => t.status === statusFilter);
     }
+    if (startDate) {
+      const d = new Date(startDate);
+      txns = txns.filter(t => parseDatetime(t.transactionDatetime) >= d);
+    }
+    if (endDate) {
+      const d = new Date(endDate);
+      d.setHours(23, 59, 59, 999);
+      txns = txns.filter(t => parseDatetime(t.transactionDatetime) <= d);
+    }
     txns.sort((a, b) => {
       const va = a[sortField];
       const vb = b[sortField];
@@ -149,7 +162,7 @@ export function Giving() {
       return sortAsc ? sa.localeCompare(sb) : sb.localeCompare(sa);
     });
     return txns;
-  }, [search, statusFilter, sortField, sortAsc]);
+  }, [search, statusFilter, sortField, sortAsc, startDate, endDate]);
 
   function toggleSort(field: keyof GivingTransaction) {
     if (sortField === field) setSortAsc(!sortAsc);
@@ -162,6 +175,35 @@ export function Giving() {
     ) : (
       <span className="ml-0.5 text-muted-foreground/40">▾</span>
     );
+
+  const handleDownloadCsv = () => {
+    if (filteredTransactions.length === 0) return;
+    
+    const headers = ["Date & Time", "Member", "Phone", "Reference", "Category", "Amount", "Status"];
+    const csvContent = [
+      headers.join(","),
+      ...filteredTransactions.map(t => 
+        [
+          `"${t.transactionDatetime}"`,
+          `"${t.memberName}"`,
+          `"${t.phoneNumber}"`,
+          `"${t.paynowId}"`,
+          `"${t.category}"`,
+          t.amount,
+          `"${t.status}"`
+        ].join(",")
+      )
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `giving_transactions_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="p-4 md:p-6 max-w-[1200px] mx-auto">
@@ -332,9 +374,36 @@ export function Giving() {
               </select>
               <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             </div>
-            <span className="text-[13px] text-muted-foreground self-center whitespace-nowrap">
-              {filteredTransactions.length} record{filteredTransactions.length !== 1 ? "s" : ""}
-            </span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-4 justify-between">
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="pl-3 pr-3 py-2 border border-border rounded-lg bg-input-background text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              />
+              <span className="text-muted-foreground text-[14px]">to</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="pl-3 pr-3 py-2 border border-border rounded-lg bg-input-background text-[14px] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[13px] text-muted-foreground whitespace-nowrap">
+                {filteredTransactions.length} record{filteredTransactions.length !== 1 ? "s" : ""}
+              </span>
+              <button
+                onClick={handleDownloadCsv}
+                disabled={filteredTransactions.length === 0}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-[13px] font-medium hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="w-4 h-4" />
+                Export CSV
+              </button>
+            </div>
           </div>
 
           {/* Table — desktop */}

@@ -9,21 +9,30 @@ import {
   ChevronLeft,
   ChevronRight,
   UserCog,
+  Calendar,
+  Handshake,
 } from "lucide-react";
 import { useState } from "react";
 import { useCurrentUser } from "../context/UserContext";
 
-const navItems = [
-  { to: "/", icon: Home, label: "Dashboard" },
-  { to: "/pastoral-care", icon: Heart, label: "Pastoral Care" },
-  { to: "/giving", icon: HandCoins, label: "Giving" },
-  { to: "/members", icon: Users, label: "Members" },
-  { to: "/settings", icon: Settings, label: "Settings" },
-];
-
 export function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const { currentUser, setCurrentUser, allUsers } = useCurrentUser();
+
+  const navItems = [
+    { to: "/", icon: Home, label: "Dashboard" },
+    { to: "/pastoral-care", icon: Heart, label: "Pastoral Care" },
+    ...(currentUser.role === "Pastor"
+      ? [{ to: "/schedule", icon: Calendar, label: "Schedule" }]
+      : currentUser.role !== "Care Team"
+      ? [{ to: "/giving", icon: HandCoins, label: "Giving" }]
+      : []),
+    { to: "/members", icon: Users, label: "Members" },
+    ...(currentUser.role !== "Pastor" && currentUser.role !== "Care Team"
+      ? [{ to: "/ministry", icon: Handshake, label: "Ministries" }]
+      : []),
+    { to: "/settings", icon: Settings, label: "Settings" },
+  ];
 
   function handleUserChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const user = allUsers.find((u) => u.id === e.target.value);

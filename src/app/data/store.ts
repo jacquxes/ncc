@@ -11,14 +11,23 @@ export type CaseType =
   | "crisis and trauma care";
 export type ConfidentialityLevel = "standard" | "sensitive" | "highly confidential";
 export type CampaignStatus = "draft" | "active" | "completed" | "archived";
-export type Role = "Admin" | "Pastor" | "Care Team" | "Ministry Leader" | "Volunteer";
+export type Role = "Admin" | "Pastor" | "Care Team" | "Ministry Leader" | "Member";
+export type CellGroup =
+  | "Alpha"
+  | "Beta"
+  | "Gamma"
+  | "Delta"
+  | "Epsilon"
+  | "Zeta"
+  | "Eta"
+  | "Theta";
 export type GivingCategory =
   | "general offering"
   | "designated offering (israel)"
   | "designated offering (outreach)"
   | "designated offering (global missions)"
   | "designated offering (others)";
-export type TransactionStatus = "active" | "completed" | "archived";
+export type TransactionStatus = "paid" | "pending" | "cancelled" | "archived";
 
 export interface PastoralCase {
   id: string;
@@ -66,6 +75,74 @@ export interface StaffMember {
   avatar?: string;
 }
 
+export interface GivingYearSummary {
+  year: number;
+  total: number;
+  transactionCount: number;
+}
+
+export interface MinistryEntry {
+  ministry: string;
+  role: string;
+  startDate: string;
+  endDate?: string; // undefined = currently serving
+  description: string;
+}
+
+export interface Ministry {
+  id: string;
+  name: string;
+  description: string;
+  leaderId: string | null;
+  memberIds: string[];
+}
+
+export interface PastoralCareEntry {
+  date: string;
+  pastor: string;
+  type: string;
+  summary: string;
+}
+
+export interface StaffNote {
+  id: string;
+  authorName: string;
+  authorRole: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface Member {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: Role;
+  cellGroup: CellGroup;
+  joinDate: string; // YYYY-MM-DD
+  profilePhotoUrl?: string;
+  givingByYear: GivingYearSummary[];
+  recentTransactionIds: string[]; // references initialTransactions
+  ministries: MinistryEntry[];
+  pastoralCareLog: PastoralCareEntry[];
+  staffNotes: StaffNote[];
+}
+
+export type DayOfWeek = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday";
+
+export interface TimeRange {
+  start: string; // HH:mm
+  end: string;   // HH:mm
+}
+
+export type WeeklyAvailability = Partial<Record<DayOfWeek, TimeRange[]>>;
+
+export interface ManualBlock {
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  endTime: string; // HH:mm
+}
+
 export interface TimelineItem {
   title: string;
   date: string;
@@ -84,6 +161,20 @@ export interface CalendarSlot {
 export interface PastorSchedule {
   pastorId: string;
   slots: CalendarSlot[];
+  weeklyAvailability: WeeklyAvailability;
+  manualBlocks: ManualBlock[];
+}
+
+/**
+ * Mock function to simulate checking against Google Calendar.
+ * Returns true if there is a conflict.
+ */
+export function checkCalendarConflicts(date: string, time: string): boolean {
+  // Use a predictable but seemingly random logic for demo purposes
+  // e.g., Slots at 10:00 AM on any day have a 30% chance of conflict
+  const hour = parseInt(time.split(":")[0]);
+  const dateHash = date.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return (dateHash + hour) % 7 === 0; 
 }
 
 export const staffMembers: StaffMember[] = [
@@ -95,6 +186,405 @@ export const staffMembers: StaffMember[] = [
   { id: "ml1", name: "Lisa Park", role: "Ministry Leader", email: "lisa@gracechurch.org" },
   { id: "a1", name: "Admin Alex Rivera", role: "Admin", email: "alex@gracechurch.org" },
 ];
+
+export const members: Member[] = [
+  {
+    id: "m1",
+    name: "David Thompson",
+    email: "david.thompson@email.com",
+    phone: "+65 9123 4567",
+    role: "Member",
+    cellGroup: "Alpha",
+    joinDate: "2020-03-15",
+    givingByYear: [
+      { year: 2020, total: 800, transactionCount: 8 },
+      { year: 2021, total: 1200, transactionCount: 12 },
+      { year: 2022, total: 1800, transactionCount: 15 },
+      { year: 2023, total: 2400, transactionCount: 20 },
+      { year: 2024, total: 3200, transactionCount: 24 },
+      { year: 2025, total: 2800, transactionCount: 22 },
+      { year: 2026, total: 400, transactionCount: 4 },
+    ],
+    recentTransactionIds: ["txn-001", "txn-014"],
+    ministries: [
+      { ministry: "Worship Team", role: "Vocalist", startDate: "2020-06-01", description: "Sunday service worship leading." },
+      { ministry: "Youth Ministry", role: "Mentor", startDate: "2021-01-15", endDate: "2023-06-30", description: "Mentored youth group of 8 teens." },
+      { ministry: "Cell Group", role: "Cell Leader", startDate: "2023-07-01", description: "Leading Alpha cell group of 12 members." },
+    ],
+    pastoralCareLog: [
+      { date: "Feb 15, 2026", pastor: "Pastor James Wilson", type: "Grief & Bereavement", summary: "Initial session following family loss. Member distressed but open to counseling." },
+      { date: "Feb 22, 2026", pastor: "Pastor James Wilson", type: "Follow-up Visit", summary: "Home visit. Emotional state improving. Encouraged journaling and community support." },
+      { date: "Mar 1, 2026", pastor: "Pastor James Wilson", type: "Check-in Call", summary: "Brief phone call. Confirmed weekly attendance. Member feels supported by cell group." },
+    ],
+    staffNotes: [
+      { id: "sn-001", authorName: "Admin Alex Rivera", authorRole: "Admin", content: "Member expressed interest in hosting a home group in Q3 2026. Follow up in June.", createdAt: "Mar 5, 2026" },
+    ],
+  },
+  {
+    id: "m2",
+    name: "Maria Gonzalez",
+    email: "maria.gonzalez@email.com",
+    phone: "+65 8234 5678",
+    role: "Ministry Leader",
+    cellGroup: "Beta",
+    joinDate: "2018-09-01",
+    givingByYear: [
+      { year: 2018, total: 600, transactionCount: 5 },
+      { year: 2019, total: 2400, transactionCount: 18 },
+      { year: 2020, total: 3000, transactionCount: 22 },
+      { year: 2021, total: 4200, transactionCount: 28 },
+      { year: 2022, total: 5000, transactionCount: 32 },
+      { year: 2023, total: 6000, transactionCount: 36 },
+      { year: 2024, total: 7200, transactionCount: 40 },
+      { year: 2025, total: 8400, transactionCount: 44 },
+      { year: 2026, total: 1000, transactionCount: 6 },
+    ],
+    recentTransactionIds: ["txn-002", "txn-013"],
+    ministries: [
+      { ministry: "Women's Ministry", role: "Director", startDate: "2019-03-01", description: "Overseeing all women's ministry programs and events." },
+      { ministry: "Worship Team", role: "Pianist", startDate: "2018-10-01", endDate: "2021-12-31", description: "Played keys for Sunday services." },
+      { ministry: "Beta Cell Group", role: "Cell Leader", startDate: "2022-01-01", description: "Leading Beta cell group of 15 members." },
+    ],
+    pastoralCareLog: [
+      { date: "Mar 1, 2026", pastor: "Pastor Sarah Chen", type: "Pre-marital Counseling", summary: "First session with couple. Discussed communication and expectations." },
+      { date: "Mar 12, 2026", pastor: "Pastor Sarah Chen", type: "Pre-marital Counseling", summary: "Second session. Worked through financial planning and spiritual alignment." },
+    ],
+    staffNotes: [
+      { id: "sn-002", authorName: "Admin Alex Rivera", authorRole: "Admin", content: "Maria is being considered for the Elder board nomination in next year's AGM.", createdAt: "Jan 20, 2026" },
+      { id: "sn-003", authorName: "Pastor Sarah Chen", authorRole: "Pastor", content: "Pre-marital sessions going well. Couple shows strong spiritual foundation.", createdAt: "Mar 15, 2026" },
+    ],
+  },
+  {
+    id: "m3",
+    name: "Robert Kim",
+    email: "robert.kim@email.com",
+    phone: "+65 9345 6789",
+    role: "Member",
+    cellGroup: "Gamma",
+    joinDate: "2022-06-20",
+    givingByYear: [
+      { year: 2022, total: 400, transactionCount: 4 },
+      { year: 2023, total: 1200, transactionCount: 10 },
+      { year: 2024, total: 1800, transactionCount: 14 },
+      { year: 2025, total: 2000, transactionCount: 16 },
+      { year: 2026, total: 230, transactionCount: 2 },
+    ],
+    recentTransactionIds: ["txn-003", "txn-020"],
+    ministries: [
+      { ministry: "AV & Tech Team", role: "Sound Engineer", startDate: "2022-09-01", description: "Managing audio setup for Sunday services." },
+      { ministry: "Hospitality Team", role: "Volunteer", startDate: "2023-03-01", endDate: "2024-06-30", description: "Greeter and café volunteer on Sundays." },
+    ],
+    pastoralCareLog: [
+      { date: "Jan 20, 2026", pastor: "Rev. Michael Torres", type: "Hospital Visitation", summary: "Visited Robert post-surgery. Prayer and encouragement offered." },
+      { date: "Feb 15, 2026", pastor: "Rev. Michael Torres", type: "Recovery Check-in", summary: "Follow-up call. Recovery progressing well." },
+      { date: "Mar 10, 2026", pastor: "Rev. Michael Torres", type: "Home Visit", summary: "Final structured care visit. Member active in church again." },
+    ],
+    staffNotes: [],
+  },
+  {
+    id: "m4",
+    name: "Angela Foster",
+    email: "angela.foster@email.com",
+    phone: "+65 8456 7890",
+    role: "Member",
+    cellGroup: "Delta",
+    joinDate: "2021-01-10",
+    givingByYear: [
+      { year: 2021, total: 1500, transactionCount: 12 },
+      { year: 2022, total: 3000, transactionCount: 20 },
+      { year: 2023, total: 4500, transactionCount: 28 },
+      { year: 2024, total: 5000, transactionCount: 30 },
+      { year: 2025, total: 3600, transactionCount: 24 },
+      { year: 2026, total: 2500, transactionCount: 10 },
+    ],
+    recentTransactionIds: ["txn-004", "txn-023"],
+    ministries: [
+      { ministry: "Outreach Team", role: "Coordinator", startDate: "2021-06-01", description: "Organising community outreach events quarterly." },
+      { ministry: "Global Missions", role: "Prayer Partner", startDate: "2022-01-01", description: "Praying for and supporting overseas missionaries." },
+    ],
+    pastoralCareLog: [
+      { date: "Mar 9, 2026", pastor: "Pastor James Wilson", type: "Financial Crisis Support", summary: "Member facing job loss. Discussed benevolence options and emotional support." },
+    ],
+    staffNotes: [
+      { id: "sn-004", authorName: "Admin Alex Rivera", authorRole: "Admin", content: "Approved one-time benevolence grant of S$500. Refer to finance team for processing.", createdAt: "Mar 10, 2026" },
+    ],
+  },
+  {
+    id: "m5",
+    name: "Thomas Brown",
+    email: "thomas.brown@email.com",
+    phone: "+65 9567 8901",
+    role: "Care Team",
+    cellGroup: "Epsilon",
+    joinDate: "2019-05-22",
+    givingByYear: [
+      { year: 2019, total: 960, transactionCount: 8 },
+      { year: 2020, total: 1440, transactionCount: 12 },
+      { year: 2021, total: 2160, transactionCount: 16 },
+      { year: 2022, total: 2880, transactionCount: 20 },
+      { year: 2023, total: 3600, transactionCount: 24 },
+      { year: 2024, total: 4320, transactionCount: 28 },
+      { year: 2025, total: 5040, transactionCount: 32 },
+      { year: 2026, total: 530, transactionCount: 4 },
+    ],
+    recentTransactionIds: ["txn-005", "txn-018"],
+    ministries: [
+      { ministry: "Care Team", role: "Care Coordinator", startDate: "2020-02-01", description: "Coordinating pastoral care visits and follow-ups." },
+      { ministry: "Discipleship Program", role: "Discipler", startDate: "2021-03-01", endDate: "2026-02-28", description: "1-on-1 discipleship with new believers." },
+      { ministry: "Epsilon Cell Group", role: "Cell Member", startDate: "2019-06-01", description: "Active participant in cell group life." },
+    ],
+    pastoralCareLog: [
+      { date: "Nov 10, 2025", pastor: "Pastor Sarah Chen", type: "Spiritual Crisis", summary: "Struggling with doubts. Began structured discipleship journey." },
+      { date: "Jan 15, 2026", pastor: "Pastor Sarah Chen", type: "Discipleship Check-in", summary: "Significant spiritual growth observed. Reading scripture consistently." },
+      { date: "Feb 28, 2026", pastor: "Pastor Sarah Chen", type: "Case Closure", summary: "Journey complete. Thomas transitioned to small group leadership track." },
+    ],
+    staffNotes: [
+      { id: "sn-005", authorName: "Pastor Sarah Chen", authorRole: "Pastor", content: "Thomas is a strong candidate for cell leader training. Recommend for Q2 cohort.", createdAt: "Mar 1, 2026" },
+    ],
+  },
+  {
+    id: "m6",
+    name: "Jennifer White",
+    email: "jennifer.white@email.com",
+    phone: "+65 8678 9012",
+    role: "Member",
+    cellGroup: "Zeta",
+    joinDate: "2023-02-14",
+    givingByYear: [
+      { year: 2023, total: 900, transactionCount: 8 },
+      { year: 2024, total: 2400, transactionCount: 16 },
+      { year: 2025, total: 3000, transactionCount: 20 },
+      { year: 2026, total: 800, transactionCount: 6 },
+    ],
+    recentTransactionIds: ["txn-006", "txn-021"],
+    ministries: [
+      { ministry: "Worship Team", role: "Vocalist", startDate: "2023-04-01", description: "Sunday service choir member." },
+      { ministry: "Welcome Team", role: "Greeter", startDate: "2023-02-14", endDate: "2024-12-31", description: "First-time visitor greeter and church tour guide." },
+    ],
+    pastoralCareLog: [
+      { date: "Feb 20, 2026", pastor: "Rev. Michael Torres", type: "Grief & Bereavement", summary: "Processing loss of close friend. Attending grief support group." },
+      { date: "Mar 7, 2026", pastor: "Rev. Michael Torres", type: "Follow-up", summary: "Positive progress. Actively engaged in Zeta cell group." },
+    ],
+    staffNotes: [],
+  },
+  {
+    id: "m7",
+    name: "Samuel Lee",
+    email: "samuel.lee@email.com",
+    phone: "+65 9789 0123",
+    role: "Ministry Leader",
+    cellGroup: "Eta",
+    joinDate: "2017-11-05",
+    givingByYear: [
+      { year: 2017, total: 300, transactionCount: 2 },
+      { year: 2018, total: 1800, transactionCount: 12 },
+      { year: 2019, total: 2400, transactionCount: 16 },
+      { year: 2020, total: 3000, transactionCount: 20 },
+      { year: 2021, total: 3600, transactionCount: 24 },
+      { year: 2022, total: 4800, transactionCount: 30 },
+      { year: 2023, total: 6000, transactionCount: 36 },
+      { year: 2024, total: 7200, transactionCount: 42 },
+      { year: 2025, total: 8400, transactionCount: 48 },
+      { year: 2026, total: 250, transactionCount: 2 },
+    ],
+    recentTransactionIds: ["txn-007"],
+    ministries: [
+      { ministry: "Youth Ministry", role: "Director", startDate: "2018-01-01", description: "Overseeing all youth programs (ages 13–21)." },
+      { ministry: "Eta Cell Group", role: "Cell Leader", startDate: "2019-03-01", description: "Leading the Eta cell group of 18 members." },
+      { ministry: "Elders Board", role: "Elder", startDate: "2023-01-01", description: "Serving on the church elders board." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [
+      { id: "sn-006", authorName: "Admin Alex Rivera", authorRole: "Admin", content: "Samuel is being considered for Associate Pastor role. Discussion in board meeting Q2.", createdAt: "Feb 5, 2026" },
+    ],
+  },
+  {
+    id: "m8",
+    name: "Grace Lim",
+    email: "grace.lim@email.com",
+    phone: "+65 8890 1234",
+    role: "Member",
+    cellGroup: "Theta",
+    joinDate: "2024-01-20",
+    givingByYear: [
+      { year: 2024, total: 1200, transactionCount: 8 },
+      { year: 2025, total: 2400, transactionCount: 14 },
+      { year: 2026, total: 200, transactionCount: 2 },
+    ],
+    recentTransactionIds: ["txn-008", "txn-019"],
+    ministries: [
+      { ministry: "Children's Ministry", role: "Sunday School Teacher", startDate: "2024-03-01", description: "Teaching ages 6–9 on Sunday mornings." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [],
+  },
+  {
+    id: "p1",
+    name: "Pastor James Wilson",
+    email: "james@gracechurch.org",
+    phone: "+65 9111 2222",
+    role: "Pastor",
+    cellGroup: "Alpha",
+    joinDate: "2015-01-01",
+    givingByYear: [
+      { year: 2024, total: 5000, transactionCount: 12 },
+      { year: 2025, total: 5500, transactionCount: 12 },
+    ],
+    recentTransactionIds: [],
+    ministries: [
+      { ministry: "Pastoral Board", role: "Senior Pastor", startDate: "2015-01-01", description: "Overseeing spiritual growth and vision." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [],
+  },
+  {
+    id: "p2",
+    name: "Pastor Sarah Chen",
+    email: "sarah@gracechurch.org",
+    phone: "+65 9222 3333",
+    role: "Pastor",
+    cellGroup: "Beta",
+    joinDate: "2017-06-15",
+    givingByYear: [
+      { year: 2024, total: 4200, transactionCount: 12 },
+      { year: 2025, total: 4500, transactionCount: 12 },
+    ],
+    recentTransactionIds: [],
+    ministries: [
+      { ministry: "Women's Ministry", role: "Assistant Pastor", startDate: "2017-06-15", description: "Supporting family and women's care." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [],
+  },
+  {
+    id: "p3",
+    name: "Rev. Michael Torres",
+    email: "michael@gracechurch.org",
+    phone: "+65 9333 4444",
+    role: "Pastor",
+    cellGroup: "Gamma",
+    joinDate: "2012-03-10",
+    givingByYear: [
+      { year: 2024, total: 6000, transactionCount: 12 },
+      { year: 2025, total: 6200, transactionCount: 12 },
+    ],
+    recentTransactionIds: [],
+    ministries: [
+      { ministry: "Prayer Ministry", role: "Lead Pastor", startDate: "2012-03-10", description: "Leading intercessory prayer teams." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [],
+  },
+  {
+    id: "ct1",
+    name: "Deacon Ruth Adams",
+    email: "ruth@gracechurch.org",
+    phone: "+65 8444 5555",
+    role: "Care Team",
+    cellGroup: "Delta",
+    joinDate: "2019-11-20",
+    givingByYear: [
+      { year: 2024, total: 3000, transactionCount: 12 },
+      { year: 2025, total: 3200, transactionCount: 12 },
+    ],
+    recentTransactionIds: [],
+    ministries: [
+      { ministry: "Care Team", role: "Deacon", startDate: "2019-11-20", description: "Coordinating hospital visits." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [],
+  },
+  {
+    id: "ct2",
+    name: "Deacon Mark Johnson",
+    email: "mark@gracechurch.org",
+    phone: "+65 8555 6666",
+    role: "Care Team",
+    cellGroup: "Epsilon",
+    joinDate: "2018-02-14",
+    givingByYear: [
+      { year: 2024, total: 2800, transactionCount: 12 },
+      { year: 2025, total: 3000, transactionCount: 12 },
+    ],
+    recentTransactionIds: [],
+    ministries: [
+      { ministry: "Hospitality", role: "Deacon", startDate: "2018-02-14", description: "Overseeing ushering and welcome teams." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [],
+  },
+  {
+    id: "ml1",
+    name: "Lisa Park",
+    email: "lisa@gracechurch.org",
+    phone: "+65 8666 7777",
+    role: "Ministry Leader",
+    cellGroup: "Zeta",
+    joinDate: "2021-08-01",
+    givingByYear: [
+      { year: 2024, total: 2400, transactionCount: 12 },
+      { year: 2025, total: 2600, transactionCount: 12 },
+    ],
+    recentTransactionIds: [],
+    ministries: [
+      { ministry: "Children's Ministry", role: "Director", startDate: "2021-08-01", description: "Overseeing Sunday School curriculum." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [],
+  },
+  {
+    id: "a1",
+    name: "Admin Alex Rivera",
+    email: "alex@gracechurch.org",
+    phone: "+65 8777 8888",
+    role: "Admin",
+    cellGroup: "Eta",
+    joinDate: "2020-05-12",
+    givingByYear: [
+      { year: 2024, total: 1200, transactionCount: 12 },
+      { year: 2025, total: 1300, transactionCount: 12 },
+    ],
+    recentTransactionIds: [],
+    ministries: [
+      { ministry: "Church Operations", role: "Operations Manager", startDate: "2020-05-12", description: "Managing church facilities and staff." },
+    ],
+    pastoralCareLog: [],
+    staffNotes: [],
+  },
+];
+
+export let initialMinistries: Ministry[] = (() => {
+  const map = new Map<string, Ministry>();
+
+  members.forEach(m => {
+    m.ministries.forEach(min => {
+      if (!map.has(min.ministry)) {
+        map.set(min.ministry, {
+          id: `min-${map.size + 1}`,
+          name: min.ministry,
+          description: min.description || "",
+          leaderId: null,
+          memberIds: []
+        });
+      }
+      
+      const ministry = map.get(min.ministry)!;
+      if (!ministry.memberIds.includes(m.id)) {
+        ministry.memberIds.push(m.id);
+      }
+      
+      // Attempt to infer leader based on role keyword
+      if (
+        !ministry.leaderId && 
+        ["director", "leader", "coordinator", "pastor", "manager", "head"].some(k => min.role.toLowerCase().includes(k))
+      ) {
+        ministry.leaderId = m.id;
+      }
+    });
+  });
+  
+  return Array.from(map.values());
+})();
 
 export const initialCases: PastoralCase[] = [
   {
@@ -296,9 +786,34 @@ export const caseTimelines: Record<string, TimelineItem[]> = {
   ],
 };
 
-// Generate mock calendar slots for pastors
-function generateSlots(pastorId: string, bookedSlots: { date: string; time: string; endTime: string; member: string }[]): PastorSchedule {
-  const baseDate = new Date(2026, 2, 11); // March 11, 2026 (today)
+// Helper to get a local YYYY-MM-DD string from a date offset
+function getLocalDateStr(offsetDays: number): string {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + offsetDays);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+// Skip weekends to find next valid weekday offset
+function nextWeekday(startOffset: number): number {
+  let off = startOffset;
+  while (true) {
+    const d = new Date();
+    d.setDate(d.getDate() + off);
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) return off;
+    off++;
+  }
+}
+
+// Generate mock calendar slots for pastors — dates relative to today
+function generateSlots(
+  pastorId: string,
+  bookedSlotDefs: { dayOffset: number; time: string; endTime: string; member: string }[]
+): PastorSchedule {
   const times = [
     { time: "9:00 AM", endTime: "10:00 AM" },
     { time: "10:00 AM", endTime: "11:00 AM" },
@@ -307,13 +822,19 @@ function generateSlots(pastorId: string, bookedSlots: { date: string; time: stri
     { time: "2:00 PM", endTime: "3:00 PM" },
     { time: "3:00 PM", endTime: "4:00 PM" },
   ];
+
+  // Resolve booked slot dates from offsets
+  const bookedSlots = bookedSlotDefs.map(b => ({
+    ...b,
+    date: getLocalDateStr(nextWeekday(b.dayOffset)),
+  }));
+
   const slots: CalendarSlot[] = [];
   for (let d = 0; d < 14; d++) {
-    const date = new Date(baseDate);
-    date.setDate(date.getDate() + d);
-    const dayOfWeek = date.getDay();
+    const dateStr = getLocalDateStr(d);
+    const dateObj = new Date(dateStr + "T12:00:00");
+    const dayOfWeek = dateObj.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) continue; // skip weekends
-    const dateStr = date.toISOString().split("T")[0];
     for (const t of times) {
       const booked = bookedSlots.find((b) => b.date === dateStr && b.time === t.time);
       slots.push({
@@ -326,41 +847,59 @@ function generateSlots(pastorId: string, bookedSlots: { date: string; time: stri
       });
     }
   }
-  return { pastorId, slots };
+
+  // Default weekly availability: Mon-Fri 09:00-16:00
+  const defaultAvailability: WeeklyAvailability = {
+    Monday: [{ start: "09:00", end: "16:00" }],
+    Tuesday: [{ start: "09:00", end: "16:00" }],
+    Wednesday: [{ start: "09:00", end: "16:00" }],
+    Thursday: [{ start: "09:00", end: "16:00" }],
+    Friday: [{ start: "09:00", end: "16:00" }],
+  };
+
+  return { 
+    pastorId, 
+    slots, 
+    weeklyAvailability: defaultAvailability,
+    manualBlocks: []
+  };
 }
 
 export const pastorSchedules: PastorSchedule[] = [
   generateSlots("p1", [
-    { date: "2026-03-11", time: "9:00 AM", endTime: "10:00 AM", member: "David Thompson" },
-    { date: "2026-03-11", time: "2:00 PM", endTime: "3:00 PM", member: "Angela Foster" },
-    { date: "2026-03-12", time: "10:00 AM", endTime: "11:00 AM", member: "Board Meeting" },
-    { date: "2026-03-13", time: "9:00 AM", endTime: "10:00 AM", member: "David Thompson" },
-    { date: "2026-03-13", time: "1:00 PM", endTime: "2:00 PM", member: "Staff Meeting" },
-    { date: "2026-03-16", time: "11:00 AM", endTime: "12:00 PM", member: "Angela Foster" },
-    { date: "2026-03-17", time: "9:00 AM", endTime: "10:00 AM", member: "Small Group Leaders" },
-    { date: "2026-03-18", time: "2:00 PM", endTime: "3:00 PM", member: "David Thompson" },
-    { date: "2026-03-19", time: "10:00 AM", endTime: "11:00 AM", member: "Youth Ministry" },
-    { date: "2026-03-20", time: "3:00 PM", endTime: "4:00 PM", member: "Deacon Meeting" },
+    // dayOffset = days from today (weekdays only via nextWeekday)
+    { dayOffset: 0, time: "9:00 AM",  endTime: "10:00 AM", member: "David Thompson" },
+    { dayOffset: 0, time: "2:00 PM",  endTime: "3:00 PM",  member: "Angela Foster" },
+    { dayOffset: 1, time: "10:00 AM", endTime: "11:00 AM", member: "Board Meeting" },
+    { dayOffset: 2, time: "9:00 AM",  endTime: "10:00 AM", member: "David Thompson" },
+    { dayOffset: 2, time: "1:00 PM",  endTime: "2:00 PM",  member: "Staff Meeting" },
+    { dayOffset: 3, time: "11:00 AM", endTime: "12:00 PM", member: "Angela Foster" },
+    { dayOffset: 4, time: "9:00 AM",  endTime: "10:00 AM", member: "Small Group Leaders" },
+    { dayOffset: 5, time: "2:00 PM",  endTime: "3:00 PM",  member: "David Thompson" },
+    { dayOffset: 6, time: "10:00 AM", endTime: "11:00 AM", member: "Michael Scott" },
+    { dayOffset: 7, time: "3:00 PM",  endTime: "4:00 PM",  member: "Sarah Jenkins" },
+    { dayOffset: 8, time: "1:00 PM",  endTime: "2:00 PM",  member: "David Thompson" },
+    { dayOffset: 9, time: "10:00 AM", endTime: "11:00 AM", member: "Angela Foster" },
   ]),
   generateSlots("p2", [
-    { date: "2026-03-11", time: "10:00 AM", endTime: "11:00 AM", member: "Maria Gonzalez" },
-    { date: "2026-03-11", time: "3:00 PM", endTime: "4:00 PM", member: "Women's Ministry" },
-    { date: "2026-03-12", time: "9:00 AM", endTime: "10:00 AM", member: "Maria Gonzalez" },
-    { date: "2026-03-12", time: "1:00 PM", endTime: "2:00 PM", member: "Thomas Brown Follow-up" },
-    { date: "2026-03-13", time: "11:00 AM", endTime: "12:00 PM", member: "Staff Meeting" },
-    { date: "2026-03-16", time: "9:00 AM", endTime: "10:00 AM", member: "Maria Gonzalez" },
-    { date: "2026-03-17", time: "2:00 PM", endTime: "3:00 PM", member: "New Member Orientation" },
-    { date: "2026-03-18", time: "10:00 AM", endTime: "11:00 AM", member: "Maria Gonzalez" },
+    { dayOffset: 0,  time: "10:00 AM", endTime: "11:00 AM", member: "Maria Gonzalez" },
+    { dayOffset: 0,  time: "3:00 PM",  endTime: "4:00 PM",  member: "Women's Ministry" },
+    { dayOffset: 1,  time: "9:00 AM",  endTime: "10:00 AM", member: "Maria Gonzalez" },
+    { dayOffset: 1,  time: "1:00 PM",  endTime: "2:00 PM",  member: "Thomas Brown" },
+    { dayOffset: 2,  time: "11:00 AM", endTime: "12:00 PM", member: "Staff Meeting" },
+    { dayOffset: 5,  time: "9:00 AM",  endTime: "10:00 AM", member: "Maria Gonzalez" },
+    { dayOffset: 6,  time: "2:00 PM",  endTime: "3:00 PM",  member: "New Members" },
+    { dayOffset: 7,  time: "10:00 AM", endTime: "11:00 AM", member: "Maria Gonzalez" },
   ]),
   generateSlots("p3", [
-    { date: "2026-03-11", time: "11:00 AM", endTime: "12:00 PM", member: "Robert Kim" },
-    { date: "2026-03-12", time: "2:00 PM", endTime: "3:00 PM", member: "Jennifer White" },
-    { date: "2026-03-13", time: "10:00 AM", endTime: "11:00 AM", member: "Robert Kim" },
-    { date: "2026-03-13", time: "3:00 PM", endTime: "4:00 PM", member: "Jennifer White" },
-    { date: "2026-03-16", time: "9:00 AM", endTime: "10:00 AM", member: "Hospital Visit" },
-    { date: "2026-03-17", time: "1:00 PM", endTime: "2:00 PM", member: "Robert Kim" },
-    { date: "2026-03-18", time: "9:00 AM", endTime: "10:00 AM", member: "Staff Meeting" },
-    { date: "2026-03-19", time: "11:00 AM", endTime: "12:00 PM", member: "Jennifer White" },
-    { date: "2026-03-20", time: "2:00 PM", endTime: "3:00 PM", member: "Elder Meeting" },
+    { dayOffset: 0,  time: "11:00 AM", endTime: "12:00 PM", member: "Robert Kim" },
+    { dayOffset: 1,  time: "2:00 PM",  endTime: "3:00 PM",  member: "Jennifer White" },
+    { dayOffset: 2,  time: "10:00 AM", endTime: "11:00 AM", member: "Robert Kim" },
+    { dayOffset: 2,  time: "3:00 PM",  endTime: "4:00 PM",  member: "Jennifer White" },
+    { dayOffset: 5,  time: "9:00 AM",  endTime: "10:00 AM", member: "Hospital Visit" },
+    { dayOffset: 6,  time: "1:00 PM",  endTime: "2:00 PM",  member: "Robert Kim" },
+    { dayOffset: 7,  time: "9:00 AM",  endTime: "10:00 AM", member: "Staff Meeting" },
+    { dayOffset: 8,  time: "11:00 AM", endTime: "12:00 PM", member: "Jennifer White" },
+    { dayOffset: 9,  time: "2:00 PM",  endTime: "3:00 PM",  member: "Elder Meeting" },
   ]),
 ];

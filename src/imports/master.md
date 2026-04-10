@@ -315,6 +315,123 @@ export function MemberCard({ member }: { member: Member }) {
 
 # 6. Feature Modules
 
+## Members — Member Management Dashboard
+
+Purpose:  
+Full-featured directory and drill-down profile view for church members.
+
+### Directory View
+
+A searchable, filterable table/list of all members.
+
+Columns: Name, Role, Cell Group, Member Since, Email  
+
+Filters:
+- Real-time text search (name or email)
+- Role dropdown: All | Admin | Pastor | Care Team | Ministry Leader | Member
+- Cell Group dropdown: All | Alpha | Beta | Gamma | Delta | Epsilon | Zeta | Eta | Theta
+
+Behaviour:
+- Clicking any member row navigates to /members/:id (full profile)
+- Desktop: table layout with sortable columns
+- Mobile: stacked card layout
+- Styling: Role badges are visible for all roles except "Member". "Member" is the baseline role and remains unbadged for a cleaner UI.
+
+### Member Data Model
+
+```ts
+type CellGroup = "Alpha" | "Beta" | "Gamma" | "Delta" | "Epsilon" | "Zeta" | "Eta" | "Theta";
+
+interface GivingYearSummary {
+  year: number;
+  total: number;
+  transactionCount: number;
+}
+
+interface MinistryEntry {
+  ministry: string;
+  role: string;
+  startDate: string;       // YYYY-MM-DD
+  endDate?: string;        // undefined = currently serving
+  description: string;
+}
+
+interface PastoralCareEntry {
+  date: string;
+  pastor: string;
+  type: string;
+  summary: string;
+}
+
+interface StaffNote {
+  id: string;
+  authorName: string;
+  authorRole: string;
+  content: string;
+  createdAt: string;
+}
+
+interface Member {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: Role;
+  cellGroup: CellGroup;
+  joinDate: string;              // YYYY-MM-DD
+  profilePhotoUrl?: string;
+  givingByYear: GivingYearSummary[];
+  recentTransactionIds: string[];
+  ministries: MinistryEntry[];
+  pastoralCareLog: PastoralCareEntry[];  // staff-only
+  staffNotes: StaffNote[];               // staff-only
+}
+```
+
+### Member Profile Page (/members/:id)
+
+Sections:
+
+**Header**
+- Profile photo placeholder (initials avatar), Name, Cell Group badge, Role badge
+- Joined date, Membership length (calculated)
+- Contact row: email and phone
+
+**Giving History**
+- Lifetime total and years on record
+- Horizontal bar chart per year (scaled relative to max year)
+- List of recent transactions from giving data
+
+**Ministries**
+- Vertical timeline of ministry entries
+- Active ministries highlighted in green; past ministries shown in muted style
+- Each entry shows: Ministry name, Role, Date range, Description
+
+**Pastoral Care** *(staff only — Pastor, Admin, Care Team)*
+- Vertical timeline of pastoral interactions
+- Each entry shows: Session type, Pastor name, Date, Summary
+- Rendered with violet tint background + "Staff Only" badge
+
+**Staff Notes** *(staff only — Pastor, Admin, Care Team)*
+- List of internal notes added by staff
+- Each note shows: Author name, role, timestamp, content
+- Rendered with violet tint background + "Staff Only" badge
+
+### Access Control
+
+- All authenticated users can view the member directory
+- Pastoral Care and Staff Notes sections are only rendered if `currentUser.role` is `Pastor`, `Admin`, or `Care Team`
+- Backend must enforce the same restriction server-side
+
+### Route
+
+```
+/members          → Members directory (list view)
+/members/:id      → Member profile (detail view)
+```
+
+---
+
 ## Pastoral Care Case Management
 Purpose:
 Track pastoral support cases for church members.
@@ -366,6 +483,29 @@ Transactions
 - completed
 - archived
 
+## Ministry Management
+Purpose:
+Manage church ministries, assign leaders, and update members.
+
+### Data Model
+```ts
+interface Ministry {
+  id: string;
+  name: string;
+  description: string;
+  leaderId: string | null;
+  memberIds: string[];
+}
+```
+
+### Views
+- **Ministry Directory**: 
+  - Desktop: Table view with columns for Name, Description, Leader, Members count, and Actions.
+  - Mobile: Card view showing ministry name, description, assigned leader, and member count.
+  - Clean UI: Removed book icon avatars from card views.
+- **Ministry Edit/Create**: Modal for updating metadata, changing the leader from the personnel list, and multi-selecting members.
+
+
 # 7. Permissions System
 
 ## Role Based Access Control (RBAC)
@@ -381,7 +521,16 @@ Frontend controls are for usability only. Backend authorization is the source of
 - users must never be able to access unauthorized records by URL, API call, or modified client request
 - audit logging must capture access and updates to sensitive records
 
-## Roles
+- audit logging must capture access and updates to sensitive records
+
+### Role Definitions
+
+- **Admin**: Full system access (equivalent to 'Staff' in architecture).
+- **Pastor**: Pastoral focus. Access to assigned cases and personal schedule. No access to Giving or Ministry management.
+- **Care Team**: Support focus. Access to assigned care cases. No access to Giving or Ministry management.
+- **Ministry Leader**: Partial management access. Access to Ministry and standard directory.
+- **Member**: Baseline access to directory and personal data.
+
 
 ### Staff
 
@@ -417,23 +566,40 @@ Typical use cases:
 - add follow-up notes after a call or visit
 - move a case from active to monitoring or closed
 
+### Member
+
+Member users have standard access to the platform. They can view the member directory but cannot access sensitive pastoral care records or staff notes.
+
+Permissions:
+- view member directory
+- view their own profile
+- view their own giving history
+- participate in campaigns
+
+Typical use cases:
+- search for other members in the directory
+- update their own contact details
+- track their own donations and volunteering history
+
 ## Permission Matrix
 
-| Resource / Action | Staff | Pastor |
-|---|---|---|
-| View all members | Yes | No |
-| Edit member records | Yes | No |
-| View all care cases | Yes | No |
-| View assigned care cases | Yes | Yes |
-| Create care case | Yes | No |
-| Assign / reassign care case | Yes | No |
-| Update case status | Yes | Yes, assigned only |
-| Add case notes | Yes | Yes, assigned only |
-| Edit existing case notes | Yes | Yes, assigned only |
-| Close case | Yes | Yes, assigned only |
-| View all campaigns | Yes | No |
-| Create / edit campaigns | Yes | No |
-| View reporting dashboard | Yes | Limited to assigned workload only, if implemented |
+| Resource / Action | Admin | Pastor | Care Team | Member |
+|---|---|---|---|---|
+| View all members | Yes | Yes | Yes | Yes |
+| Edit member records | Yes | No | No | No |
+| View Giving module | Yes | No | No | Yes |
+| View Ministry module | Yes | No | No | Yes |
+| View Schedule module | No | Yes | No | No |
+| View all care cases | Yes | No | No | No |
+| View assigned care cases | Yes | Yes | Yes | No |
+| Create care case | Yes | No | No | No |
+| Assign / reassign care case | Yes | No | No | No |
+| Update case status | Yes | Yes* | Yes* | No |
+| Add case notes | Yes | Yes* | Yes* | No |
+| View Staff Only sections | Yes | Yes | Yes | No |
+
+*Assigned records only.
+
 
 ## Authorization Rules
 
@@ -529,7 +695,6 @@ The RBAC model should be extensible to support additional roles later, such as:
 - admin
 - care team
 - ministry leader
-- volunteer
 
 The permission model should be implemented using policy-based authorization or a centralized permission map to avoid hardcoding role checks throughout the codebase.
 
